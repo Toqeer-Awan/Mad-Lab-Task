@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Image,
   View,
@@ -6,12 +6,40 @@ import {
   TextInput,
   TouchableOpacity,
   Text,
+  Alert,
 } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import Icon from "react-native-vector-icons/FontAwesome";
 
 const logo = require("../assets/logo-removebg-preview.png");
 
-const LoginSignUP = () => {
+const SignUP = ({ navigation }) => {
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
+  const handleSignUp = async () => {
+    if (!username || !email || !password || !confirmPassword) {
+      Alert.alert("Error", "Please fill all fields");
+      return;
+    }
+    if (password !== confirmPassword) {
+      Alert.alert("Error", "Passwords do not match");
+      return;
+    }
+
+    const user = { username, email, password };
+    try {
+      await AsyncStorage.setItem("user", JSON.stringify(user));
+      Alert.alert("Success", "Account created successfully!");
+      navigation.navigate("Login");
+    } catch (error) {
+      console.error(error);
+      Alert.alert("Error", "Something went wrong!");
+    }
+  };
+
   return (
     <View style={styles.container}>
       <Image style={styles.logo} source={logo} />
@@ -19,25 +47,46 @@ const LoginSignUP = () => {
       <View style={styles.userinput}>
         <Text style={styles.heading}>Create Account</Text>
 
-        <TextInput style={styles.input} placeholder="Enter Your User Name" />
-        <TextInput style={styles.input} placeholder="Enter Your Email" />
+        <TextInput
+          style={styles.input}
+          placeholder="Enter Your User Name"
+          value={username}
+          onChangeText={setUsername}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Enter Your Email"
+          value={email}
+          onChangeText={setEmail}
+        />
         <TextInput
           style={styles.input}
           placeholder="Enter Your Password"
           secureTextEntry
+          value={password}
+          onChangeText={setPassword}
         />
         <TextInput
           style={styles.input}
           placeholder="Confirm Your Password"
           secureTextEntry
+          value={confirmPassword}
+          onChangeText={setConfirmPassword}
         />
-        <TouchableOpacity style={styles.button}>
+        <TouchableOpacity style={styles.button} onPress={handleSignUp}>
           <Text style={styles.buttonText}>Sign Up</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={() => navigation.navigate("Login")}>
+          <Text style={styles.signupText}>
+            Already have an account?{" "}
+            <Text style={{ color: "#0059ff" }}>Login</Text>
+          </Text>
         </TouchableOpacity>
       </View>
 
       <View style={styles.userinput}>
-        <Text style={styles.iconheading}>----- Or Login With -----</Text>
+        <Text style={styles.iconheading}>----- Or Sign Up With -----</Text>
       </View>
 
       <View style={styles.socialIcons}>
@@ -55,7 +104,7 @@ const LoginSignUP = () => {
   );
 };
 
-export default LoginSignUP;
+export default SignUP;
 
 const styles = StyleSheet.create({
   container: {
@@ -93,10 +142,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     backgroundColor: "#fff",
     elevation: 2,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
   },
   button: {
     width: "90%",
@@ -106,17 +151,17 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginTop: 15,
-    elevation: 3,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
   },
   buttonText: {
     color: "#fff",
     fontSize: 18,
     fontWeight: "bold",
     textTransform: "uppercase",
+  },
+  signupText: {
+    marginTop: 15,
+    fontSize: 14,
+    color: "#666",
   },
   socialIcons: {
     flexDirection: "row",
@@ -131,7 +176,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginHorizontal: 10,
-    elevation: 3,
   },
   iconheading: {
     fontSize: 16,
