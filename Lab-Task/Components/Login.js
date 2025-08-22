@@ -8,8 +8,9 @@ import {
   Text,
   Alert,
 } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import Icon from "react-native-vector-icons/FontAwesome";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../firebaseConfig"; // ✅ make sure firebaseConfig.js is in root folder
 
 const logo = require("../assets/logo-removebg-preview.png");
 
@@ -18,24 +19,18 @@ const Login = ({ navigation }) => {
   const [password, setPassword] = useState("");
 
   const handleLogin = async () => {
+    if (!email || !password) {
+      Alert.alert("Error", "Please enter email and password");
+      return;
+    }
+
     try {
-      const storedUser = await AsyncStorage.getItem("user");
-      if (!storedUser) {
-        Alert.alert("Error", "No account found. Please sign up first.");
-        return;
-      }
-
-      const user = JSON.parse(storedUser);
-
-      if (email === user.email && password === user.password) {
-        Alert.alert("Success", "Login Successful!");
-        navigation.navigate("Home");
-      } else {
-        Alert.alert("Error", "Invalid email or password");
-      }
+      await signInWithEmailAndPassword(auth, email, password);
+      Alert.alert("Success", "Login Successful!");
+      navigation.navigate("Home");
     } catch (error) {
       console.error(error);
-      Alert.alert("Error", "Something went wrong!");
+      Alert.alert("Error", error.message);
     }
   };
 
@@ -51,6 +46,8 @@ const Login = ({ navigation }) => {
           placeholder="Enter Your Email"
           value={email}
           onChangeText={setEmail}
+          keyboardType="email-address"
+          autoCapitalize="none"
         />
         <TextInput
           style={styles.input}
@@ -66,7 +63,8 @@ const Login = ({ navigation }) => {
 
         <TouchableOpacity onPress={() => navigation.navigate("Signup")}>
           <Text style={styles.signupText}>
-            Don’t have an account? <Text style={{ color: "#0059ff" }}>Sign Up</Text>
+            Don’t have an account?{" "}
+            <Text style={{ color: "#0059ff" }}>Sign Up</Text>
           </Text>
         </TouchableOpacity>
       </View>

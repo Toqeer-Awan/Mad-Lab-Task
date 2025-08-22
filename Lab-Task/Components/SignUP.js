@@ -8,8 +8,10 @@ import {
   Text,
   Alert,
 } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import Icon from "react-native-vector-icons/FontAwesome";
+
+import { auth } from "../firebaseConfig";
+import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 
 const logo = require("../assets/logo-removebg-preview.png");
 
@@ -29,14 +31,24 @@ const SignUP = ({ navigation }) => {
       return;
     }
 
-    const user = { username, email, password };
     try {
-      await AsyncStorage.setItem("user", JSON.stringify(user));
+      
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+
+      
+      await updateProfile(userCredential.user, {
+        displayName: username,
+      });
+
       Alert.alert("Success", "Account created successfully!");
       navigation.navigate("Login");
     } catch (error) {
       console.error(error);
-      Alert.alert("Error", "Something went wrong!");
+      Alert.alert("Error", error.message);
     }
   };
 
@@ -90,13 +102,19 @@ const SignUP = ({ navigation }) => {
       </View>
 
       <View style={styles.socialIcons}>
-        <TouchableOpacity style={[styles.iconButton, { backgroundColor: "#db4437" }]}>
+        <TouchableOpacity
+          style={[styles.iconButton, { backgroundColor: "#db4437" }]}
+        >
           <Icon name="google" size={24} color="#fff" />
         </TouchableOpacity>
-        <TouchableOpacity style={[styles.iconButton, { backgroundColor: "#4267B2" }]}>
+        <TouchableOpacity
+          style={[styles.iconButton, { backgroundColor: "#4267B2" }]}
+        >
           <Icon name="facebook" size={24} color="#fff" />
         </TouchableOpacity>
-        <TouchableOpacity style={[styles.iconButton, { backgroundColor: "#1DA1F2" }]}>
+        <TouchableOpacity
+          style={[styles.iconButton, { backgroundColor: "#1DA1F2" }]}
+        >
           <Icon name="twitter" size={24} color="#fff" />
         </TouchableOpacity>
       </View>
